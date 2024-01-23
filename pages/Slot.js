@@ -7,57 +7,39 @@ import { useSelector, useDispatch } from 'react-redux';
 function Slot() {
   const dispatch = useDispatch();
   const value = useSelector((state) => state.value);
-  const [spin, setSpin] = useState(false);
-  const [result, setResult] = useState([]);
-  const [buttonCount, setButtonCount] = useState(2);
+  const [selectedName, setSelectedName] = useState(null);
+  const [btnChange, setBtnChange] = useState(false)
   const router = useRouter();
+  console.log('selectedName : ', selectedName)
 
   const handleReset = () => {
     dispatch(setReset());
     router.push('/');
   }
 
-  useEffect(() => {
-    const initialResult = Array.from({ length: value.length }, () => 'Whose wallet?');
+  const handleSelectRandomName = () => {
+    const randomIndex = Math.floor(Math.random() * value.length);
+    const selected = value[randomIndex];
 
-    setResult(initialResult);
-  }, [setResult, value.length]);
-
-  const spinSlot = () => {
-    setSpin(!spin);
-    setButtonCount(buttonCount - 1);
-  };
-
-  useEffect(() => {
-    let interval;
-
-    if (spin) {
-      interval = setInterval(() => {
-
-        const newResult = result.map(() => value[Math.floor(Math.random() * value.length)]);
-        console.log('result  : ', result)
-
-        setResult(newResult);
-      }, 10);
+    // 안전하게 처리: 선택된 이름이 없을 경우에 대한 확인
+    if (selected) {
+      setSelectedName(selected);
+      setBtnChange(true)
     } else {
-      clearInterval(interval);
+      setSelectedName(null); // 또는 원하는 처리를 추가하세요.
     }
-
-    return () => clearInterval(interval);
-  }, [spin, result, value]);
+    console.log('selectedName : ', selectedName)
+  };
 
   return (
     <div className='slotGrid'>
       <div className='slotTxt'>
         <p style={{ fontSize: '24px', marginBottom: '10px' }}>
-          {result[0]}
+          {selectedName}
         </p>
       </div>
-      {buttonCount !== 0 ? (
-        <Button variant={spin ? 'danger' : 'primary'} onClick={() => { spinSlot() }}>{spin ? '정지' : '시작'}</Button>
-      ) : (
-        <Button onClick={() => { handleReset() }}>다시하기</Button>
-      )}
+
+      {btnChange === true ? (<Button onClick={() => { handleReset() }}>확인</Button>) : (<Button onClick={() => { handleSelectRandomName() }}>뽑기</Button>)}
     </div>
   );
 }
